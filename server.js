@@ -27,11 +27,12 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-app.use(express.static(__dirname));
+// Serve only the public/ folder for static assets to avoid exposing repository files
+app.use(express.static(path.join(__dirname, "public")));
 
 const API_KEY = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
 if (!API_KEY) {
-  console.warn("AI API key not found. /api/chat will return setup guidance until configured.");
+  console.warn("AI API key not found. /api endpoints will return setup guidance until configured.");
 }
 
 let openai = null;
@@ -49,6 +50,7 @@ function validateMessages(messages) {
   for (const message of messages) {
     if (!message || typeof message !== "object") return "each message must be an object";
     if (!message.role || !message.content) return "each message must include role and content";
+    if (!["user", "assistant", "system"].includes(message.role)) return "message role must be 'user', 'assistant', or 'system'";
     if (typeof message.content !== "string") return "message content must be a string";
     if (message.content.length > 8000) return "a message is too long";
   }
@@ -79,6 +81,7 @@ app.post("/api/chat", async (req, res) => {
     const payload = [systemMessage, ...messages];
     const model = process.env.AI_MODEL || DEFAULT_MODEL;
 
+    // Use the official OpenAI SDK to create a chat completion
     const completion = await openai.chat.completions.create({
       model,
       messages: payload,
@@ -89,11 +92,10 @@ app.post("/api/chat", async (req, res) => {
     const reply = completion?.choices?.[0]?.message?.content ?? "";
     return res.json({ reply });
   } catch (error) {
+    // Log full error server-side but return a minimal safe message to clients
     console.error("AI request failed:", error && (error.message || error));
     const status = error?.status || 500;
-    return res.status(status).json({
-      error: error?.message || "AI provider error",
-    });
+    return res.status(status).json({ error: "AI provider error" });
   }
 });
 
@@ -109,18 +111,11 @@ app.post("/api/image", async (req, res) => {
     }
 
     if (!openai.images || typeof openai.images.generate !== "function") {
-      return res.status(501).json({
-        error: "Image API not supported by the configured OpenAI SDK version on this server.",
-      });
+      return res.status(501).json({ error: "Image API not supported by the configured OpenAI SDK version on this server." });
     }
 
     const imageModel = process.env.IMAGE_MODEL || "dall-e-3";
-    const imageResponse = await openai.images.generate({
-      model: imageModel,
-      prompt,
-      size: "1024x1024",
-      n: 1,
-    });
+    const imageResponse = await openai.images.generate({ model: imageModel, prompt, size: "1024x1024", n: 1 });
 
     const imageUrl = imageResponse?.data?.[0]?.url ?? null;
     if (!imageUrl) {
@@ -134,8 +129,9 @@ app.post("/api/image", async (req, res) => {
   }
 });
 
+// SPA fallback to the public index
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 const port = process.env.PORT || 3000;

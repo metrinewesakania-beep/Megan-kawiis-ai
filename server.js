@@ -20,14 +20,14 @@ app.use(helmet());
 // Limit JSON body size to avoid very large requests
 app.use(express.json({ limit: "64kb" }));
 
-// Basic rate limiting to prevent abuse
-const limiter = rateLimit({
+// Global rate limiting to prevent abuse
+const globalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 60, // limit each IP to 60 requests per windowMs
+  max: parseInt(process.env.GLOBAL_RATE_LIMIT || "120", 10),
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use(limiter);
+app.use(globalLimiter);
 
 // Serve only the public/ folder for static assets to avoid exposing repository files
 app.use(express.static(path.join(__dirname, "public")));
@@ -45,7 +45,15 @@ if (API_KEY) {
 
 const DEFAULT_MODEL = process.env.AI_MODEL || "gpt-4o-mini";
 
-function validateMessages(messages) {
+// Per-endpoint limiter for /api/chat
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: parseInt(process.env.CHAT_RATE_LIMIT || "30", 10),
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+function validateMessagesFromClient(messages) {
   if (!Array.isArray(messages)) return "messages must be an array";
   if (messages.length === 0) return "messages is empty";
   if (messages.length > 40) return "messages too long";
@@ -53,7 +61,9 @@ function validateMessages(messages) {
   for (const message of messages) {
     if (!message || typeof message !== "object") return "each message must be an object";
     if (!message.role || message.content === undefined) return "each message must include role and content";
-    if (!["user", "assistant", "system"].includes(message.role)) return "message role must be 'user', 'assistant', or 'system'";
+    // Reject client-supplied system messages
+    if (message.role === "system") return "client cannot supply messages with role 'system'";
+    if (!["user", "assistant"].includes(message.role)) return "message role must be 'user' or 'assistant'";
     if (typeof message.content !== "string") return "message content must be a string";
     if (message.content.length > 8000) return "a message is too long";
   }
@@ -61,7 +71,7 @@ function validateMessages(messages) {
   return null;
 }
 
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", chatLimiter, async (req, res) => {
   try {
     if (!openai) {
       return res.status(503).json({
@@ -70,7 +80,7 @@ app.post("/api/chat", async (req, res) => {
     }
 
     const { messages } = req.body || {};
-    const validationError = validateMessages(messages);
+    const validationError = validateMessagesFromClient(messages);
     if (validationError) {
       return res.status(400).json({ error: validationError });
     }
@@ -87,7 +97,7 @@ app.post("/api/chat", async (req, res) => {
     const payload = [systemMessage, ...sanitized];
     const model = process.env.AI_MODEL || DEFAULT_MODEL;
 
-    // Create a chat completion using the official OpenAI SDK
+    // Use official OpenAI SDK to create a chat completion
     const completion = await openai.chat.completions.create({
       model,
       messages: payload,
@@ -96,9 +106,13 @@ app.post("/api/chat", async (req, res) => {
     });
 
     // Safely extract reply text
-    const reply = (completion && completion.choices && completion.choices[0] && completion.choices[0].message && completion.choices[0].message.content) || "";
+    const reply = completion?.choices?.[0]?.message?.content ?? completion?.choices?.[0]?.text ?? "";
 
-    return res.json({ reply });
+    if (!reply || String(reply).trim().length === 0) {
+      return res.status(502).json({ error: "AI provider returned an empty response" });
+    }
+
+    return res.json({ reply: String(reply) });
   } catch (error) {
     // Log full error server-side but return a minimal safe message to clients
     console.error("AI request failed:", error && (error.message || error));
@@ -141,7 +155,7 @@ app.post("/api/image", async (req, res) => {
 });
 
 // Health check endpoint useful for deployment platforms
-app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+app.get("/api/health", (req, res) => res.json({ status: "ok", apiConfigured: !!API_KEY }));
 
 // SPA fallback to the public index
 app.get("*", (req, res) => {

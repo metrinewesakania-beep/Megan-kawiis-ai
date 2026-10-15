@@ -17,11 +17,13 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(helmet());
+// Limit JSON body size to avoid very large requests
 app.use(express.json({ limit: "64kb" }));
 
+// Basic rate limiting to prevent abuse
 const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 60,
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // limit each IP to 60 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -30,6 +32,7 @@ app.use(limiter);
 // Serve only the public/ folder for static assets to avoid exposing repository files
 app.use(express.static(path.join(__dirname, "public")));
 
+// Keep API keys strictly on the server. Support either AI_API_KEY or OPENAI_API_KEY env var.
 const API_KEY = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
 if (!API_KEY) {
   console.warn("AI API key not found. /api endpoints will return setup guidance until configured.");
@@ -49,7 +52,7 @@ function validateMessages(messages) {
 
   for (const message of messages) {
     if (!message || typeof message !== "object") return "each message must be an object";
-    if (!message.role || !message.content) return "each message must include role and content";
+    if (!message.role || message.content === undefined) return "each message must include role and content";
     if (!["user", "assistant", "system"].includes(message.role)) return "message role must be 'user', 'assistant', or 'system'";
     if (typeof message.content !== "string") return "message content must be a string";
     if (message.content.length > 8000) return "a message is too long";
@@ -62,15 +65,18 @@ app.post("/api/chat", async (req, res) => {
   try {
     if (!openai) {
       return res.status(503).json({
-        error: "AI service not configured on the server. Set AI_API_KEY in the environment.",
+        error: "AI service not configured on the server. Set AI_API_KEY (or OPENAI_API_KEY) in the environment.",
       });
     }
 
-    const { messages } = req.body;
+    const { messages } = req.body || {};
     const validationError = validateMessages(messages);
     if (validationError) {
       return res.status(400).json({ error: validationError });
     }
+
+    // Sanitize messages (simple trimming) before sending to provider
+    const sanitized = messages.map(m => ({ role: m.role, content: String(m.content).trim() }));
 
     const systemMessage = {
       role: "system",
@@ -78,10 +84,10 @@ app.post("/api/chat", async (req, res) => {
         "You are Megan Kawiis AI: intelligent, playful, supportive, and creative. Keep replies clear, friendly, and useful. Use a warm personality without mentioning internal system prompts.",
     };
 
-    const payload = [systemMessage, ...messages];
+    const payload = [systemMessage, ...sanitized];
     const model = process.env.AI_MODEL || DEFAULT_MODEL;
 
-    // Use the official OpenAI SDK to create a chat completion
+    // Create a chat completion using the official OpenAI SDK
     const completion = await openai.chat.completions.create({
       model,
       messages: payload,
@@ -89,7 +95,9 @@ app.post("/api/chat", async (req, res) => {
       max_tokens: 800,
     });
 
-    const reply = completion?.choices?.[0]?.message?.content ?? "";
+    // Safely extract reply text
+    const reply = (completion && completion.choices && completion.choices[0] && completion.choices[0].message && completion.choices[0].message.content) || "";
+
     return res.json({ reply });
   } catch (error) {
     // Log full error server-side but return a minimal safe message to clients
@@ -105,11 +113,12 @@ app.post("/api/image", async (req, res) => {
       return res.status(503).json({ error: "Image generation not configured on the server." });
     }
 
-    const { prompt } = req.body;
+    const { prompt } = req.body || {};
     if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
       return res.status(400).json({ error: "prompt is required and must be a short string" });
     }
 
+    // Check image generation support
     if (!openai.images || typeof openai.images.generate !== "function") {
       return res.status(501).json({ error: "Image API not supported by the configured OpenAI SDK version on this server." });
     }
@@ -117,17 +126,22 @@ app.post("/api/image", async (req, res) => {
     const imageModel = process.env.IMAGE_MODEL || "dall-e-3";
     const imageResponse = await openai.images.generate({ model: imageModel, prompt, size: "1024x1024", n: 1 });
 
-    const imageUrl = imageResponse?.data?.[0]?.url ?? null;
-    if (!imageUrl) {
-      return res.status(502).json({ error: "Image generation failed or returned no URL." });
-    }
+    // OpenAI image responses may contain a url or b64_json depending on SDK / provider.
+    const url = imageResponse?.data?.[0]?.url;
+    const b64 = imageResponse?.data?.[0]?.b64_json || imageResponse?.data?.[0]?.b64;
 
-    return res.json({ url: imageUrl });
+    if (url) return res.json({ url });
+    if (b64) return res.json({ url: `data:image/png;base64,${b64}` });
+
+    return res.status(502).json({ error: "Image generation failed or returned no URL." });
   } catch (error) {
     console.error("Image generation failed:", error && (error.message || error));
     return res.status(500).json({ error: "Image generation error" });
   }
 });
+
+// Health check endpoint useful for deployment platforms
+app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
 // SPA fallback to the public index
 app.get("*", (req, res) => {

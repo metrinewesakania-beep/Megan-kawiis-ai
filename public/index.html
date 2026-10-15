@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Megan Kawiis AI</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">✦</div>
+    <div>
+      <h1>Megan Kawiis AI</h1>
+      <p>Your clever, creative AI companion</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h2>Hey there! I'm Megan. ✨</h2>
+      <p>Smart mind. Big personality. Creative energy. Ask me questions, explore ideas, or prepare a prompt for your next AI image.</p>
+    </section>
+
+    <nav class="tabs">
+      <button class="active" data-tab="chat">💬 Chat</button>
+      <button data-tab="images">🎨 Image Studio</button>
+      <button data-tab="voice">🎙️ Voice Lab</button>
+    </nav>
+
+    <section id="chat" class="panel">
+      <h3>Talk to Megan</h3>
+      <div id="messages" aria-live="polite">
+        <div class="msg megan">Hey! 💜 Megan Kawiis AI is here. Tell me what's on your mind. Need answers, ideas, jokes, or a little sass? Let's go!</div>
+      </div>
+      <div class="composer">
+        <input id="prompt" placeholder="Type your message..." aria-label="Your message">
+        <button id="send" class="primary" type="button">Send</button>
+      </div>
+      <div class="action-row">
+        <button id="listen" type="button">🎤 Speak to type</button>
+        <button id="stop" type="button">⏹ Stop voice</button>
+        <button id="newChat" type="button">🆕 New chat</button>
+        <button id="clear" type="button">🧹 Clear conversation</button>
+      </div>
+      <p id="status" class="muted">Demo mode: connect an AI service for real AI answers.</p>
+    </section>
+
+    <section id="images" class="panel hidden">
+      <h3>🎨 Image Studio</h3>
+      <p class="muted">Describe the image you want to create.</p>
+      <textarea id="imagePrompt" placeholder="Example: A futuristic city glowing beneath a purple sunset, cinematic lighting..."></textarea>
+      <div class="action-row">
+        <button id="improve" class="primary" type="button">Improve my prompt</button>
+        <button id="copyPrompt" type="button">Copy prompt</button>
+        <button id="generateImage" type="button">Generate image</button>
+      </div>
+      <div id="imageResult" class="panel hidden"></div>
+      <p class="muted">Image generation requires a connected image-generation service. This page prepares prompts but will only generate images when a backend image API is configured.</p>
+    </section>
+
+    <section id="voice" class="panel hidden">
+      <h3>🎙️ Voice Lab</h3>
+      <p class="muted">Choose an available voice on your device.</p>
+      <label for="voiceSelect">Voice</label>
+      <select id="voiceSelect"><option value="">Default device voice</option></select>
+      <br><br>
+      <label for="voiceText">Text to speak</label>
+      <textarea id="voiceText" placeholder="Type something for Megan to read aloud..."></textarea>
+      <div class="action-row">
+        <button id="speak" class="primary" type="button">🔊 Speak</button>
+        <button id="pause" type="button">Pause / Resume</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>🌟 Megan's personality</h3>
+      <div class="grid">
+        <div><strong>Intelligent</strong><p class="muted">Clear explanations and creative thinking.</p></div>
+        <div><strong>Playful</strong><p class="muted">Witty, cheeky, and full of personality.</p></div>
+        <div><strong>Supportive</strong><p class="muted">Warm, respectful, and encouraging.</p></div>
+        <div><strong>Creative</strong><p class="muted">Stories, ideas, coding, and image prompts.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>MEGAN KAWIIS AI · Your imagination, amplified.</footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

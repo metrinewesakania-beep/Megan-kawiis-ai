@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Megan Kawiis AI</title>
+<style>
+:root {
+  --bg:#0b0917; --panel:#171329; --purple:#a78bfa;
+  --pink:#f0abfc; --text:#f8f6ff; --muted:#b5afcb;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:Arial,sans-serif; min-height:100vh;
+}
+header {
+  padding:20px; border-bottom:1px solid #302749;
+  display:flex; align-items:center; gap:12px;
+  position:sticky; top:0; background:#0b0917ee;
+}
+.logo {
+  width:46px;height:46px;border-radius:16px;
+  display:grid;place-items:center;font-size:24px;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+}
+h1 {font-size:19px;margin:0 0 5px}
+header p {margin:0;color:var(--muted);font-size:12px}
+main {max-width:850px;margin:auto;padding:22px 16px 40px}
+.hero {padding:20px 4px}
+.hero h2 {font-size:30px;margin:0 0 10px}
+.hero p {color:var(--muted);line-height:1.6}
+.tabs {display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+button {
+  border:0;border-radius:12px;padding:12px 16px;
+  cursor:pointer;font-weight:700;color:var(--text);
+  background:#29213f;
+}
+button:hover {filter:brightness(1.2)}
+.tabs button.active,.primary {
+  background:linear-gradient(120deg,#8b5cf6,#c026d3);
+}
+.panel {
+  background:var(--panel);border:1px solid #302749;
+  border-radius:20px;padding:18px;margin-bottom:16px;
+}
+#messages {
+  min-height:250px;max-height:420px;overflow:auto;
+  display:flex;flex-direction:column;gap:12px;
+}
+.msg {padding:13px 15px;border-radius:16px;line-height:1.5;
+  max-width:90%;white-space:pre-wrap;overflow-wrap:anywhere}
+.megan {background:#29213f;align-self:flex-start}
+.user {background:#6941c6;align-self:flex-end}
+small,.muted {color:var(--muted)}
+.composer {display:flex;gap:8px;margin-top:14px}
+input,textarea,select {
+  width:100%;background:#100d20;color:var(--text);
+  border:1px solid #403454;border-radius:12px;
+  padding:13px;font:inherit;
+}
+textarea {resize:vertical;min-height:110px}
+.composer input {min-width:0}
+.grid {display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hidden {display:none!important}
+.action-row {display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+footer {text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:560px) {
+  .grid {grid-template-columns:1fr}
+  .hero h2 {font-size:25px}
+  .composer {flex-wrap:wrap}
+  .composer input {flex-basis:100%}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">✦</div>
+  <div>
+    <h1>Megan Kawiis AI</h1>
+    <p>Your clever, creative AI companion</p>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h2>Hey there! I'm Megan. ✨</h2>
+    <p>
+      Smart mind. Big personality. Creative energy.
+      Ask me questions, explore ideas, or prepare a prompt
+      for your next AI image.
+    </p>
+  </section>
+
+  <nav class="tabs">
+    <button class="active" data-tab="chat">💬 Chat</button>
+    <button data-tab="images">🎨 Image Studio</button>
+    <button data-tab="voice">🎙️ Voice Lab</button>
+  </nav>
+
+  <section id="chat" class="panel">
+    <h3>Talk to Megan</h3>
+    <div id="messages" aria-live="polite">
+      <div class="msg megan">Hey! 💜 Megan Kawiis AI is here.
+Tell me what's on your mind. Need answers, ideas, jokes,
+or a little sass? Let's go!</div>
+    </div>
+    <div class="composer">
+      <input id="prompt" placeholder="Type your message..."
+       aria-label="Your message">
+      <button id="send" class="primary" type="button">Send</button>
+    </div>
+    <div class="action-row">
+      <button id="listen" type="button">🎤 Speak to type</button>
+      <button id="stop" type="button">⏹ Stop voice</button>
+    </div>
+    <p class="muted" id="status">Demo mode: connect an AI service for real AI answers.</p>
+  </section>
+
+  <section id="images" class="panel hidden">
+    <h3>🎨 Image Studio</h3>
+    <p class="muted">Describe the image you want to create.</p>
+    <textarea id="imagePrompt"
+      placeholder="Example: A futuristic city glowing beneath a purple sunset, cinematic lighting..."></textarea>
+    <div class="action-row">
+      <button id="improve" class="primary" type="button">Improve my prompt</button>
+      <button id="copyPrompt" type="button">Copy prompt</button>
+    </div>
+    <div id="imageResult" class="panel hidden"></div>
+    <p class="muted">
+      Image generation requires a connected image-generation service.
+      This page prepares prompts but does not generate images yet.
+    </p>
+  </section>
+
+  <section id="voice" class="panel hidden">
+    <h3>🎙️ Voice Lab</h3>
+    <p class="muted">Choose an available voice on your device.</p>
+    <label for="voiceSelect">Voice</label>
+    <select id="voiceSelect"><option value="">Default device voice</option></select>
+    <br><br>
+    <label for="voiceText">Text to speak</label>
+    <textarea id="voiceText"
+      placeholder="Type something for Megan to read aloud..."></textarea>
+    <div class="action-row">
+      <button id="speak" class="primary" type="button">🔊 Speak</button>
+      <button id="pause" type="button">Pause / Resume</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>🌟 Megan's personality</h3>
+    <div class="grid">
+      <div><strong>Intelligent</strong><p class="muted">Clear explanations and creative thinking.</p></div>
+      <div><strong>Playful</strong><p class="muted">Witty, cheeky, and full of personality.</p></div>
+      <div><strong>Supportive</strong><p class="muted">Warm, respectful, and encouraging.</p></div>
+      <div><strong>Creative</strong><p class="muted">Stories, ideas, coding, and image prompts.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer>MEGAN KAWIIS AI · Your imagination, amplified.</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+
+document.querySelectorAll("[data-tab]").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll("[data-tab]").forEach(b =>
+      b.classList.toggle("active", b === button));
+    ["chat","images","voice"].forEach(id =>
+      $(id).classList.toggle("hidden", id !== button.dataset.tab));
+  });
+});
+
+function addMessage(text, who) {
+  const div = document.createElement("div");
+  div.className = "msg " + who;
+  div.textContent = text;
+  $("messages").appendChild(div);
+  $("messages").scrollTop = $("messages").scrollHeight;
+}
+
+function demoReply(text) {
+  const t = text.toLowerCase();
+  if (t.includes("hello") || t.includes("hi"))
+    return "Hey! 💜 You have officially entered Megan territory. What are we creating today?";
+  if (t.includes("joke"))
+    return "Why did the computer go to the doctor? It caught a virus! 😂 Want another one?";
+  if (t.includes("your name") || t.includes("who are you"))
+    return "I'm Megan Kawiis AI: creative, curious, confident, and just a little cheeky. ✨";
+  if (t.includes("website") || t.includes("code"))
+    return "Let's build it step by step! Tell me what you want the website to do, and we can plan the code.";
+  return "I hear you! 💜 This version is running in demo mode, so I can't reason about every question yet. Connect a real AI model to unlock intelligent answers. For now, try asking for a joke, saying hello, or exploring Image Studio.";
+}
+
+let currentUtterance = null;
+function speakText(text) {
+  if (!("speechSynthesis" in window)) {
+    $("status").textContent = "Speech output is not supported in this browser.";
+    return;
+  }
+  if (currentUtterance) speechSynthesis.cancel();
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  const selected = $("voiceSelect").value;
+  const voice = speechSynthesis.getVoices().find(v => v.name === selected);
+  if (voice) currentUtterance.voice = voice;
+  currentUtterance.rate = 1;
+  currentUtterance.pitch = 1.08;
+  currentUtterance.onend = () => { currentUtterance = null; };
+  speechSynthesis.speak(currentUtterance);
+}
+
+function sendMessage() {
+  const text = $("prompt").value.trim();
+  if (!text) return;
+  $("prompt").value = "";
+  addMessage(text, "user");
+  const reply = demoReply(text);
+  addMessage(reply, "megan");
+  $("status").textContent = "Demo response shown. Real AI is not connected yet.";
+  speakText(reply);
+}
+
+$("send").addEventListener("click", sendMessage);
+$("prompt").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+$("stop").addEventListener("click", () => {
+  if ("speechSynthesis" in window) {
+    speechSynthesis.cancel();
+    currentUtterance = null;
+  }
+});
+$("speak").addEventListener("click", () => {
+  const text = $("voiceText").value.trim();
+  if (text) speakText(text);
+});
+$("pause").addEventListener("click", () => {
+  if (!("speechSynthesis" in window)) return;
+  if (speechSynthesis.paused) speechSynthesis.resume();
+  else speechSynthesis.pause();
+});
+
+function loadVoices() {
+  if (!("speechSynthesis" in window)) return;
+  const select = $("voiceSelect");
+  const old = select.value;
+  select.innerHTML = '<option value="">Default device voice</option>';
+  speechSynthesis.getVoices().forEach(voice => {
+    const option = document.createElement("option");
+    option.value = voice.name;
+    option.textContent = voice.name + " (" + voice.lang + ")";
+    select.appendChild(option);
+  });
+  select.value = old;
+}
+if ("speechSynthesis" in window) {
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+$("listen").addEventListener("click", () => {
+  const Recognition = window.SpeechRecognition ||
+                      window.webkitSpeechRecognition;
+  if (!Recognition) {
+    $("status").textContent =
+      "Voice typing is unavailable in this browser. Try your keyboard microphone.";
+    return;
+  }
+  const recognition = new Recognition();
+  recognition.lang = "en-US";
+  recognition.onresult = event => {
+    $("prompt").value = event.results[0][0].transcript;
+    $("status").textContent = "Voice captured. Press Send when ready.";
+  };
+  recognition.onerror = () => {
+    $("status").textContent = "Voice input failed. Check microphone permission.";
+  };
+  recognition.start();
+});
+
+$("improve").addEventListener("click", () => {
+  const text = $("imagePrompt").value.trim();
+  if (!text) {
+    $("imageResult").classList.remove("hidden");
+    $("imageResult").textContent = "Write a description first.";
+    return;
+  }
+  const improved = text +
+    ". Highly detailed composition, cinematic lighting, rich colors, clear subject, professional visual quality.";
+  $("imagePrompt").value = improved;
+  $("imageResult").classList.remove("hidden");
+  $("imageResult").textContent =
+    "Your prompt has been enhanced! Copy it into a connected image generator to create the picture.";
+});
+$("copyPrompt").addEventListener("click", async () => {
+  const text = $("imagePrompt").value.trim();
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    $("imageResult").classList.remove("hidden");
+    $("imageResult").textContent = "Prompt copied!";
+  } catch {
+    $("imageResult").classList.remove("hidden");
+    $("imageResult").textContent = "Please select and copy the prompt manually.";
+  }
+});
+</script>
+</body>
+</html>

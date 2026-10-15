@@ -18,29 +18,45 @@ A responsive full-stack AI website with a dark purple/pink design, chat session 
 
 Set these in your backend hosting environment or local `.env`:
 
-- `AI_API_KEY` — required for chat and image generation
+- `AI_API_KEY` — required for chat and image generation (preferred)
+- `OPENAI_API_KEY` — supported as an alternative to `AI_API_KEY`
 - `AI_MODEL` — optional, example: `gpt-4o-mini`
 - `IMAGE_MODEL` — optional, example: `dall-e-3`
 - `PORT` — optional, default 3000
+- `CHAT_RATE_LIMIT` — optional, requests per minute per IP for /api/chat (default 30)
 
 ## Deployment on Render
 
-1. Create a new Web Service on Render.
-2. Connect the GitHub repo.
-3. Use these settings:
-   - Build command: `npm install`
-   - Start command: `npm run start`
-4. Add environment variables in Render:
-   - `AI_API_KEY`
-   - `AI_MODEL=gpt-4o-mini`
-   - `IMAGE_MODEL=dall-e-3`
-5. Deploy the service.
+This project is designed to run as a Render Web Service (Render can run Node.js backends and serve static assets). GitHub Pages cannot run the Node backend.
 
-The Render URL will serve both the frontend and `/api/chat` from the same service.
+Steps to deploy on Render:
+
+1. Create a new Web Service on Render and connect your GitHub repo.
+2. Select the branch (usually `main`).
+3. Use these settings in the Render service configuration:
+   - Environment: Node
+   - Build command: `npm install`
+   - Start command: `npm start`
+4. Add the following environment variables in the Render dashboard (do NOT commit these to Git):
+   - `AI_API_KEY` (or `OPENAI_API_KEY`) — your OpenAI API key
+   - `AI_MODEL` — optional (example: `gpt-4o-mini`)
+   - `IMAGE_MODEL` — optional (example: `dall-e-3`)
+   - `CHAT_RATE_LIMIT` — optional (example: `30`)
+5. Configure a health check path in Render: `/api/health` (the server returns {"status":"ok","apiConfigured":true/false}).
+6. Deploy the service and monitor logs.
+
+Render settings (important):
+- Service type: Web Service
+- Runtime: Node
+- Build command: `npm install`
+- Start command: `npm start`
+
+Notes
+- Keep all API keys in Render environment variables or in a local `.env` file that is listed in `.gitignore`.
+- The frontend calls `/api/chat` and `/api/image` on the same host, so no separate CORS configuration is required for typical deployments on a single Render Web Service.
 
 ## Project notes
 
-- GitHub Pages alone cannot run the Node.js backend. Use Render or another compatible Node host for the full deployment.
-- Keep all secrets in the backend environment, not in frontend files or Git commits.
-- The image generation feature is available only if the backend image API is configured.
-- Browser speech recognition and speech synthesis work only where the browser supports them.
+- The image generation feature is available only if the backend image API is configured and your OpenAI key has image generation access.
+- Browser speech recognition and speech synthesis work only in browsers that support them.
+- Do not commit `.env` or any real API key to Git.

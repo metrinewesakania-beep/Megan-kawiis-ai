@@ -49,18 +49,36 @@ async function sendToServer() {
     });
 
     if (!resp.ok) {
-      const errJson = await resp.json().catch(() => null);
-      const errMsg = (errJson && errJson.error) ? errJson.error : resp.statusText || "Server error";
+      let errMsg = `Server error (${resp.status})`;
+      try {
+        const errJson = await resp.json();
+        if (errJson && errJson.error) errMsg = errJson.error;
+      } catch (e) {
+        // ignore parse errors
+      }
       throw new Error(errMsg);
     }
 
-    const data = await resp.json();
-    const reply = data.reply || "";
+    let data;
+    try {
+      data = await resp.json();
+    } catch (e) {
+      throw new Error("Invalid response from server");
+    }
+
+    const reply = (data && data.reply) ? String(data.reply).trim() : "";
+
     loader.remove();
-    appendMessage(reply, "megan");
-    conversation.push({ role: "assistant", content: reply });
-    setStatus("Conversation with real AI.");
-    speakText(reply);
+
+    if (!reply) {
+      appendMessage("Sorry — the AI returned an empty response.", "megan");
+      setStatus("AI returned empty response.", true);
+    } else {
+      appendMessage(reply, "megan");
+      conversation.push({ role: "assistant", content: reply });
+      setStatus("Connected to AI service.");
+      try { speakText(reply); } catch {}
+    }
   } catch (err) {
     loader.remove();
     appendMessage("Sorry — could not get a real AI response. " + (err.message || ""), "megan");
@@ -75,7 +93,7 @@ function clearConversation() {
   const messages = $("messages");
   if (messages) messages.innerHTML = "";
   appendMessage("Hey! 💜 Megan Kawiis AI is here. Tell me what's on your mind.", "megan");
-  setStatus("Demo mode: connect an AI service for real AI answers.");
+  setStatus("Checking server configuration…");
 }
 
 function newChat() {
@@ -101,7 +119,32 @@ function speakText(text) {
   speechSynthesis.speak(u);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+// Health check helper
+async function checkServerHealth() {
+  try {
+    const r = await fetch("/api/health", { cache: "no-store" });
+    if (!r.ok) {
+      setStatus("Server unreachable or misconfigured.", true);
+      return false;
+    }
+    const j = await r.json().catch(() => null);
+    if (j && j.status === "ok" && j.apiConfigured) {
+      setStatus("Connected to AI service.");
+      return true;
+    } else if (j && j.status === "ok") {
+      setStatus("Server running but AI not configured (demo mode).", true);
+      return false;
+    } else {
+      setStatus("Server health check returned unexpected result.", true);
+      return false;
+    }
+  } catch (e) {
+    setStatus("Server unreachable — falling back to demo mode.", true);
+    return false;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
   const sendBtn = $("send");
   if (sendBtn) sendBtn.addEventListener("click", sendToServer);
 
@@ -170,10 +213,19 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(body.error || r.statusText || "Image service error");
       }
       const j = await r.json();
+      // Render image securely without innerHTML
+      const result = $("imageResult");
+      result.classList.remove("hidden");
+      result.innerHTML = ""; // clear previous
       if (j.url) {
-        $("imageResult").innerHTML = `<img src="${j.url}" alt="Generated image" style="max-width:100%;border-radius:8px">`;
+        const img = document.createElement("img");
+        img.src = j.url;
+        img.alt = "Generated image";
+        img.style.maxWidth = "100%";
+        img.style.borderRadius = "8px";
+        result.appendChild(img);
       } else {
-        $("imageResult").textContent = "Image generated but no URL returned.";
+        result.textContent = "Image generated but no URL returned.";
       }
     } catch (err) {
       $("imageResult").textContent = "Image generation failed: " + (err.message || "unknown");
@@ -228,5 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Run health check and set initial status
+  await checkServerHealth();
   clearConversation();
 });

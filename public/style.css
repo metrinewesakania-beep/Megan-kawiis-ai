@@ -73,3 +73,116 @@ footer {text-align:center;color:var(--muted);font-size:12px;padding:20px}
 /* small spinner for loading message */
 .spinner{display:inline-block;margin-left:8px;width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,0.12);border-top-color:var(--pink);animation:spin .85s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* Mobile responsiveness upgrade */
+html {
+  width: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  width: 100%;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+main {
+  width: min(100% - 24px, 900px);
+  margin-inline: auto;
+}
+
+.panel,
+.grid > div {
+  min-width: 0;
+}
+
+input,
+textarea,
+select,
+button {
+  max-width: 100%;
+  font: inherit;
+}
+
+button {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.msg {
+  max-width: 96%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.composer input {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+#imageResult img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 600px) {
+  main {
+    width: calc(100% - 20px);
+    padding-top: 12px;
+  }
+
+  .panel {
+    padding: 12px;
+  }
+
+  .hero h2 {
+    font-size: 25px;
+  }
+
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .tabs button {
+    padding: 10px 4px;
+    font-size: 12px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-row button {
+    flex: 1 1 auto;
+  }
+
+  #messages {
+    max-height: 48vh;
+  }
+}
+
+@media (max-width: 360px) {
+  .tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .composer {
+    flex-wrap: wrap;
+  }
+
+  .composer input,
+  .composer button {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}

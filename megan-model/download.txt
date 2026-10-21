@@ -1,0 +1,72 @@
+9.7s 1 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+9.7s 2 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+9.7s 3 0.00s - to python to disable frozen modules.
+9.7s 4 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+10.5s 5 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+10.5s 6 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+10.5s 7 0.00s - to python to disable frozen modules.
+10.5s 8 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+18.9s 9 Training device: cpu
+28.4s 10 Step 100/600 | Loss: 0.567
+31.6s 11 Step 200/600 | Loss: 0.127
+34.6s 12 Step 300/600 | Loss: 0.082
+37.7s 13 Step 400/600 | Loss: 0.069
+40.7s 14 Step 500/600 | Loss: 0.061
+43.7s 15 Step 600/600 | Loss: 0.058
+43.7s 16 
+43.7s 17 MODEL TRAINED!
+43.7s 18 Vocabulary size: 36
+43.7s 19 Trainable parameters: 22308
+43.7s 20 
+43.7s 21 Sample generated text:
+43.7s 22 
+45.0s 23 Megan Kawiis AI Labs builds useful technology.
+45.0s 24 Hello, I am Megan Kawiis AI.
+45.0s 25 I can help with learning, coding, writing, and creativity.
+45.0s 26 Learning takes practice, patience, and good examples.
+45.0s 27 Technology can help people solve problems.
+45.0s 28 We build, test, learn, and improve our model.Megan Kawiis AI learns patte
+45.1s 29 Megan Kawiis AI training workspace
+45.1s 30 PyTorch version: 2.11.0+cpu
+45.1s 31 Device: CPU
+45.1s 32 Ready to begin training!
+45.2s 33 Training on: cpu
+45.2s 34 Step 0/300 | Loss: 3.551
+46.1s 35 Step 50/300 | Loss: 1.524
+47.0s 36 Step 100/300 | Loss: 0.332
+47.9s 37 Step 150/300 | Loss: 0.150
+48.8s 38 Step 200/300 | Loss: 0.093
+49.6s 39 Step 250/300 | Loss: 0.082
+50.3s 40 Step 300/300 | Loss: 0.069
+50.3s 41 
+50.3s 42 Megan Kawiis-1 training complete!
+50.3s 43 Trainable parameters: 22114
+50.5s 44 MEGAN KAWIIS-1 SAYS:
+51.1s 45 Megan Kawiis AI is learning.
+51.1s 46 Megan Kawiis AI is learning.
+51.1s 47 Megan Kawiis AI is learning.
+51.1s 48 Megan Kawiis AI helps with coding and creativity.
+51.1s 49 
+51.1s 50 Megan Kawiis AI Labs builds technology.
+51.1s 51 Artificial intelligence learns patter
+51.1s 52 Megan Kawiis AI helps with coding a
+51.3s 53 === MEGAN KAWIIS-1 TEST ===
+51.9s 54 Prompt: Megan Kawiis AI
+51.9s 55 
+51.9s 56 Generated response:
+51.9s 57 Megan Kawiis AI Labs builds technology.
+51.9s 58 Artificial intelligence learns patterns from data.
+51.9s 59 Neural networks adjust weights during trainingn Kawiis AI Labs builds technology.
+51.9s 60 Artificial intelligence learns patterns fr
+51.9s 61 
+51.9s 62 Test finished!
+52.0s 63 Megan Kawiis-1 saved successfully!
+52.0s 64 File: /kaggle/working/megan_kawiis_1.pt
+56.2s 65 /usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\|'
+56.2s 66 cells[i][c] = re.sub('\\\\\|', '|', cell)
+56.5s 67 /usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\_'
+56.5s 68 text = re.sub(r'_', '\_', text) # Escape underscores in display text
+57.4s 69 [NbConvertApp] Converting notebook __notebook__.ipynb to notebook
+57.5s 70 [NbConvertApp] Writing 20048 bytes to __notebook__.ipynb
+60.6s 71 [NbConvertApp] Converting notebook __notebook__.ipynb to html
+61.3s 72 [NbConvertApp] Writing 318179 bytes to __results__.html
